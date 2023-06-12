@@ -5,18 +5,16 @@ import contract.Subscriber;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class Publisher implements Runnable {
-    private final Subscriber subscriber;
-    private final AtomicLong totalSum;
-    private double[] sortedArray;
+public class Publisher implements Callable<Double> {
+    private final ArrayList<Double> numbers;
 
-
-    public Publisher(Subscriber subscriber) {
-        this.subscriber = subscriber;
-        this.totalSum = new AtomicLong(0);
+    public Publisher(int count) {
+        this.numbers = generateRandomNumber(count);
     }
+
 
 
     public ArrayList<Double> generateRandomNumber(int upperBound) {
@@ -48,16 +46,9 @@ public class Publisher implements Runnable {
 
 
     @Override
-    public void run() {
-        //Use while if you want to generate multiples emails
-       // while(true) {
-            ArrayList<Double> numbers = generateRandomNumber(1000000);
-            double average = averageXMod3(numbers);
-            double finalResult = totalSum.getAndAdd((long) average);
-            subscriber.email(finalResult);
-       // }
-
-
-
+    public Double call() throws Exception {
+        ArrayList<Double> number = generateRandomNumber(1000000);
+        double average = averageXMod3(number);
+        return average;
     }
 }

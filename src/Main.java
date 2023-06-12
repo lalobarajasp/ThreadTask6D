@@ -1,42 +1,32 @@
 import publisher.Publisher;
-import sortedAndMerge.SortedAndMerge;
 import subscriber.Subscriber;
+
+import java.util.concurrent.*;
 
 public class Main {
     public static void main(String[] args) {
 
-        Subscriber subscriber1 = new Subscriber("Eduardo");
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
 
-        Publisher publisher1 = new Publisher(subscriber1);
-        Publisher publisher2 = new Publisher(subscriber1);
+        Subscriber subscriber = new Subscriber("Subscriber");
 
-        final var valuePublisher1 = publisher1.run();
-        final var valuePublisher2 = publisher2.run();
+        Callable<Double> publisher1 = new Publisher(1_000_000);
+        Callable<Double> publisher2 = new Publisher(1_000_000);
 
+        Future<Double> future1 = executorService.submit(publisher1);
+        Future<Double> future2 = executorService.submit(publisher2);
 
-        final var sortedAndMerge = new SortedAndMerge(publisher1,publisher2);
-
-        Thread t1 = new Thread(sortedAndMerge);
-
-
-        t1.start();
-        System.out.println("Sorted and Merge Array");
-        print(sortedAndMerge);
-
-
-
-
-
-
-
-
-    }
-
-    private static void print(SortedAndMerge sortedAndMerge) {
-        for(double num : sortedAndMerge) {
-            System.out.println(num);
+        try {
+            subscriber.processAverages(future1, future2).get();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
         }
-    }
 
+        executorService.shutdown();
+
+
+    }
 
 }
